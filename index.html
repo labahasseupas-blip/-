@@ -126,6 +126,10 @@
             border-color: rgba(255, 255, 255, 0.22);
         }
 
+        @media (hover: none) {
+            .tilt-card { touch-action: pan-y; }
+        }
+
         .tilt-inner {
             transform: translateZ(24px);
         }
@@ -509,11 +513,11 @@
     </footer>
 
     <script>
-        // 1. Card 3D Mouse Tilt Interaction
+        // 1. Card 3D Pointer and Touch Tilt Interaction
         function initTiltCards() {
             const cards = document.querySelectorAll('.tilt-card');
             cards.forEach(card => {
-                card.addEventListener('mousemove', (e) => {
+                const tiltAt = (e) => {
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
@@ -527,11 +531,18 @@
                     const rotateY = ((x - centerX) / centerX) * 6;
 
                     card.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+                };
+                card.addEventListener('pointermove', (e) => {
+                    if (e.pointerType !== 'touch' || e.buttons > 0) tiltAt(e);
                 });
+                card.addEventListener('pointerdown', (e) => {
+                    if (e.pointerType === 'touch') tiltAt(e);
+                });
+                const reset = () => { card.style.transform = 'rotateX(0deg) rotateY(0deg)'; };
+                card.addEventListener('pointerup', reset);
+                card.addEventListener('pointercancel', reset);
 
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = 'rotateX(0deg) rotateY(0deg)';
-                });
+                card.addEventListener('mouseleave', reset);
             });
         }
 
